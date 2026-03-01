@@ -147,69 +147,12 @@
     margin: 0;
   }
 
-  .item-row a .icon {
-    font-size: 1.1rem;
-    flex-shrink: 0;
-  }
-  .item-row a .name-wrap {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-  .item-row a .name {
-    font-weight: 700;
-    font-size: 0.95rem;
-  }
-  .item-row a .qty {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--muted);
-    margin-top: 1px;
-  }
-  .item-row a .arrow {
-    color: var(--muted);
-    font-size: 0.8rem;
-  }
-
-  .empty-state {
-    text-align: center;
-    color: var(--muted);
-    font-size: 0.9rem;
-    padding: 32px 0;
-    font-weight: 600;
-  }
-
-  /* チェックボックス付きアイテム */
-  .item-row {
-    display: flex;
-    align-items: stretch;
-    gap: 8px;
+  #result li {
     margin-bottom: 8px;
     animation: fadeUp 0.3s ease;
   }
 
-  .check-btn {
-    flex-shrink: 0;
-    width: 48px;
-    border: none;
-    border-radius: var(--radius);
-    background: var(--card);
-    box-shadow: var(--shadow);
-    cursor: pointer;
-    font-size: 1.3rem;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .check-btn:active { transform: scale(0.92); }
-  .check-btn.checked {
-    background: var(--success-light);
-    box-shadow: none;
-  }
-
-  .item-row a {
-    flex: 1;
+  #result a {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -224,47 +167,44 @@
     border: 2px solid transparent;
     transition: all 0.2s;
   }
-  .item-row a:hover {
+  #result a:hover {
     border-color: var(--primary);
     background: var(--primary-light);
     transform: translateY(-1px);
     box-shadow: 0 6px 24px rgba(59,110,248,0.15);
   }
-  .item-row.done a {
-    opacity: 0.35;
-    text-decoration: line-through;
-    pointer-events: none;
+  #result a .icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  #result a .name-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  #result a .name {
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  #result a .qty {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+  #result a .arrow {
+    color: var(--muted);
+    font-size: 0.8rem;
   }
 
-  /* 進捗バー */
-  .progress-wrap {
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    box-shadow: var(--shadow);
-    margin-bottom: 14px;
-  }
-  .progress-label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.82rem;
-    font-weight: 700;
+  .empty-state {
+    text-align: center;
     color: var(--muted);
-    margin-bottom: 8px;
+    font-size: 0.9rem;
+    padding: 32px 0;
+    font-weight: 600;
   }
-  .progress-label .done-count { color: var(--success); }
-  .progress-bar-bg {
-    height: 8px;
-    background: var(--border);
-    border-radius: 999px;
-    overflow: hidden;
-  }
-  .progress-bar-fill {
-    height: 100%;
-    background: var(--success);
-    border-radius: 999px;
-    transition: width 0.4s ease;
-  }
+
 
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(8px); }
@@ -283,7 +223,6 @@
   </div>
 
   <div id="stats-area"></div>
-  <div id="progress-area"></div>
   <ul id="result"></ul>
 </div>
 
@@ -386,64 +325,18 @@ function generate() {
       <div class="stat-chip"><div class="num">${rawLines.filter(l=>l.trim()).length}</div><div class="lbl">入力行数</div></div>
     </div>`;
 
-  // チェック状態
-  const checked = new Set();
-
-  function updateProgress() {
-    const total = foods.length;
-    const done = checked.size;
-    const pct = total ? Math.round(done / total * 100) : 0;
-    document.getElementById("progress-area").innerHTML = `
-      <div class="progress-wrap">
-        <div class="progress-label">
-          <span>購入済み <span class="done-count">${done}</span> / ${total}</span>
-          <span>${pct}%</span>
-        </div>
-        <div class="progress-bar-bg">
-          <div class="progress-bar-fill" style="width:${pct}%"></div>
-        </div>
-      </div>`;
-  }
-
   foods.forEach(({ keyword, original }, i) => {
     const qty = original.replace(keyword, '').replace(/^[\s\u3000:：]+/, '').trim();
 
     const li = document.createElement("li");
-    li.className = "item-row";
     li.style.animationDelay = (i * 0.03) + 's';
-
-    // チェックボタン
-    const btn = document.createElement("button");
-    btn.className = "check-btn";
-    btn.textContent = "☐";
-    btn.setAttribute("aria-label", "購入済みにする");
-    btn.addEventListener("click", () => {
-      const done = checked.has(keyword);
-      if (done) {
-        checked.delete(keyword);
-        btn.textContent = "☐";
-        btn.classList.remove("checked");
-        li.classList.remove("done");
-      } else {
-        checked.add(keyword);
-        btn.textContent = "✓";
-        btn.classList.add("checked");
-        li.classList.add("done");
-      }
-      updateProgress();
-    });
-
     const a = document.createElement("a");
     a.href = "https://ns.tokyu-bell.jp/shop/goods/search.aspx?keyword=" + encodeURIComponent(keyword) + "&ct=&goods_code=&name=&gt=&seq=&search=%E6%A4%9C%E7%B4%A2%E3%81%99%E3%82%8B&variation=";
     a.target = "_blank";
     a.innerHTML = `<span class="icon">🔍</span><span class="name-wrap"><span class="name">${keyword}</span>${qty ? `<span class="qty">${qty}</span>` : ''}</span><span class="arrow">↗</span>`;
-
-    li.appendChild(btn);
     li.appendChild(a);
     ul.appendChild(li);
   });
-
-  updateProgress();
 }
 </script>
 </body>
