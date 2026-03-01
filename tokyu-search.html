@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>東急ネットスーパー 検索リンク生成</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=Nunito:wght@400;600;700&display=swap');
+
+  :root {
+    --bg: #f0f4ff;
+    --card: #ffffff;
+    --primary: #3b6ef8;
+    --primary-light: #e8eeff;
+    --success: #22c55e;
+    --success-light: #dcfce7;
+    --warn: #f59e0b;
+    --warn-light: #fef3c7;
+    --info: #3b82f6;
+    --info-light: #dbeafe;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 14px;
+    --shadow: 0 4px 20px rgba(59,110,248,0.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 16px;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; top: -80px; right: -80px;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #c7d6ff 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  .container {
+    max-width: 480px;
+    margin: 0 auto;
+    position: relative; z-index: 1;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 16px;
+    color: var(--primary);
+    letter-spacing: -0.5px;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 14px;
+  }
+
+  .card-label {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+
+  textarea {
+    width: 100%;
+    height: 180px;
+    padding: 12px;
+    font-size: 0.95rem;
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--text);
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.6;
+  }
+  textarea:focus { border-color: var(--primary); }
+  textarea::placeholder { color: var(--muted); }
+
+  .btn {
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 12px;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 3px 12px rgba(59,110,248,0.30);
+  }
+  .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+
+  /* Stats bar */
+  .stats {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    animation: fadeUp 0.3s ease;
+  }
+  .stat-chip {
+    flex: 1;
+    background: var(--card);
+    border-radius: 10px;
+    padding: 10px 12px;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .stat-chip .num {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--primary);
+  }
+  .stat-chip .lbl {
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  /* Result list */
+  #result {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  #result li {
+    margin-bottom: 8px;
+    animation: fadeUp 0.3s ease;
+  }
+
+  #result a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 16px;
+    background: var(--card);
+    border-radius: var(--radius);
+    text-decoration: none;
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 0.95rem;
+    box-shadow: var(--shadow);
+    border: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  #result a:hover {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(59,110,248,0.15);
+  }
+  #result a .icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  #result a .name {
+    flex: 1;
+  }
+  #result a .arrow {
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+
+  .empty-state {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    padding: 32px 0;
+    font-weight: 600;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🛒 東急ネットスーパー</h1>
+
+  <div class="card">
+    <div class="card-label">📋 食材リスト全文を貼り付けてください</div>
+    <textarea id="input" placeholder="ご準備頂きます食材と調味料のリストのご連絡です。&#10;【食材リスト】&#10;鶏もも肉 2枚&#10;玉ねぎ 3個&#10;...&#10;&#10;（冒頭・文末の挨拶文ごとそのまま貼ってOKです）"></textarea>
+    <button class="btn btn-primary" onclick="generate()">🔍 検索リンクを作る</button>
+  </div>
+
+  <div id="stats-area"></div>
+  <ul id="result"></ul>
+</div>
+
+<script>
+// ---- フィルタリングロジック ----
+
+// 行を「不要な行」として除外するパターン
+const SKIP_LINE_PATTERNS = [
+  /^【.*】/,           // 【食材リスト】など見出し
+  /^〈.*〉/,           // 〈野菜〉など小見出し
+  /^[◆◇■□▼▽●○]/,   // 箇条書き記号で始まる説明行
+  /以上よろしく/,
+  /よろしくお願い/,
+  /ご相談/,
+  /お気軽に/,
+  /基本調味料/,
+  /油類の不足/,
+  /不足がないよう/,
+  /補充をお願い/,
+  /食材と調味料のリスト/,
+  /ご連絡です/,
+  /ご準備頂きます/,
+  /ご準備いただきます/,
+  /神崎|担当|スタッフ/,   // 署名
+  /その他[、,]/,
+  /入手できない/,
+  /苦手な物/,
+  /^[　\s]*$/,          // 空行
+];
+
+// キーワードから除去する不要な部分
+function cleanKeyword(raw) {
+  return raw
+    // 数量・単位・記号を除去
+    .replace(/[0-9０-９]+[\s　]*[〜～]/g, '')      // 数字〜
+    .replace(/[0-9０-９]+[\s　]*(g|ml|cc|kg|L|ℓ|本|枚|個|束|袋|切れ|かけ|片|さく|尾|匹|羽|缶|瓶|パック|カップ|大さじ|小さじ|合|膳|人前|人分|食分|掴み|適量|少々|ひとつまみ)/gi, '')
+    // 括弧類とその中身（補足説明）
+    .replace(/（[^）]*）/g, '')
+    .replace(/\([^)]*\)/g, '')
+    .replace(/「[^」]*」/g, '')
+    .replace(/【[^】]*】/g, '')
+    // 数字・記号
+    .replace(/[0-9０-９]/g, '')
+    .replace(/[〜～・＊*※◎○●▼▽◆□■]/g, '')
+    // 全角スペース・スペース
+    .replace(/[　\s]+/g, '')
+    // 末尾の助詞的な不要文字
+    .replace(/[はがをにでもとやのへ]$/,'')
+    .trim();
+}
+
+// 「これは食材名っぽい行か」を判定
+function isFoodLine(line) {
+  // 全角・半角数字、単位、食材名らしいパターンが含まれていれば食材行とみなす
+  // 長すぎる行（説明文）は除外
+  if (line.length > 40) return false;
+
+  // スキップパターンに一致したら除外
+  for (const p of SKIP_LINE_PATTERNS) {
+    if (p.test(line)) return false;
+  }
+
+  // 記号や挨拶ばかりの行は除外
+  if (/^[!！。、.,\s　]+$/.test(line)) return false;
+
+  return true;
+}
+
+function generate() {
+  const text = document.getElementById("input").value;
+
+  // 改行・読点・「、」「・」で分割して行リストを作る
+  const rawLines = text.split(/[\n、。・\/\/]+/);
+
+  const foods = rawLines
+    .map(l => l.trim())
+    .filter(isFoodLine)
+    .map(cleanKeyword)
+    .filter(k => k.length >= 2) // 1文字以下は除外
+    .filter((v, i, a) => v && a.indexOf(v) === i); // 重複・空除外
+
+  const statsArea = document.getElementById("stats-area");
+  const ul = document.getElementById("result");
+  ul.innerHTML = "";
+
+  if (foods.length === 0) {
+    statsArea.innerHTML = '';
+    ul.innerHTML = '<li class="empty-state">食材が見つかりませんでした 🤔<br><small>リスト全文をそのまま貼り付けてみてください</small></li>';
+    return;
+  }
+
+  statsArea.innerHTML = `
+    <div class="stats">
+      <div class="stat-chip"><div class="num">${foods.length}</div><div class="lbl">食材数</div></div>
+      <div class="stat-chip"><div class="num">${rawLines.filter(l=>l.trim()).length}</div><div class="lbl">入力行数</div></div>
+    </div>`;
+
+  foods.forEach((food, i) => {
+    const li = document.createElement("li");
+    li.style.animationDelay = (i * 0.03) + 's';
+    const a = document.createElement("a");
+    a.href = "https://ns.tokyu-bell.jp/shop/goods/search.aspx?keyword=" + encodeURIComponent(food);
+    a.target = "_blank";
+    a.innerHTML = `<span class="icon">🔍</span><span class="name">${food}</span><span class="arrow">↗</span>`;
+    li.appendChild(a);
+    ul.appendChild(li);
+  });
+}
+</script>
+</body>
+</html>
