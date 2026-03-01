@@ -309,7 +309,7 @@ function generate() {
     const li = document.createElement("li");
     li.style.animationDelay = (i * 0.03) + 's';
     const a = document.createElement("a");
-    a.href = "https://ns.tokyu-bell.jp/shop/goods/search.aspx?keyword=" + encodeURIComponent(food);
+    a.href = "https://ns.tokyu-bell.jp/shop/goods/search.aspx?keyword=" + encodeURIComponent(food) + "&ct=&goods_code=&name=&gt=&seq=&search=%E6%A4%9C%E7%B4%A2%E3%81%99%E3%82%8B&variation=";
     a.target = "_blank";
     a.innerHTML = `<span class="icon">🔍</span><span class="name">${food}</span><span class="arrow">↗</span>`;
     li.appendChild(a);
